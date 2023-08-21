@@ -1,0 +1,23 @@
+{
+  "name": "coherency",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "prettier": "^2.7.1",
+    "serve": "^14.2.0"
+  },
+  "scripts": {
+    "start": "serve -s . -l 8080"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quantuminformation/javascript-frameworks-forbidden.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/quantuminformation/javascript-frameworks-forbidden/issues"
+  },
+  "homepage": "https://github.com/quantuminformation/javascript-frameworks-forbidden#readme"
+}
