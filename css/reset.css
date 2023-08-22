@@ -6,3 +6,7 @@ things that annoy me
 a {
   text-decoration: none;
 }
+/* in your reset.css or common.css */
+body {
+  background-color: #121212; /* Or whatever your dark mode background color is */
+}

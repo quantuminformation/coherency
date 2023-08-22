@@ -13,7 +13,7 @@ export default (hostComponent) => {
     .join('');
 
   hostComponent.innerHTML = `
-    <div class="flex gap-md align-center">
+    <div class="flex gap-md items-center">
      <span>Theme</span> ${themeButtons}
     </div>
     

@@ -1,5 +1,5 @@
 export default (hostComponent) => {
-    hostComponent.innerHTML = ''; // Clear the hostComponent
+    hostComponent.innerHTML = '';
 
     const flexContainer = document.createElement('div');
     flexContainer.className = 'flex flex-col gap-md items-center';
@@ -9,7 +9,7 @@ export default (hostComponent) => {
     backButton.id = 'goBack';
     backButton.className = 'back-button';
     backButton.innerHTML = '🔙 Go Back';
-    backButton.addEventListener('click', showCoherencyChoice);
+    // Notice we aren't attaching the event here, we'll do it post-render.
 
     function commonTextAreaSection(placeholderText) {
         return `
@@ -31,11 +31,20 @@ export default (hostComponent) => {
         });
     }
 
+    function reattachBackButtonEventListener() {
+        const backButtonElement = document.getElementById("goBack");
+        if (backButtonElement) {
+            backButtonElement.addEventListener('click', showCoherencyChoice);
+        }
+    }
+
     function showCoherencyChoice() {
         flexContainer.innerHTML = `
             <h2>Find COHERENCY in: (choose one)</h2>
-            <div class="flex gap-md"><button id="chooseConversation">Conversation</button>
-            <button id="chooseContent">Content</button></div>
+            <div class="flex gap-md">
+                <button id="chooseConversation">Conversation</button>
+                <button id="chooseContent">Content</button>
+            </div>
         `;
 
         attachInitialEventListeners();
@@ -48,6 +57,7 @@ export default (hostComponent) => {
             ${commonTextAreaSection("Your dictated text will appear here...")}
         `;
 
+        reattachBackButtonEventListener();
         enableContinueIfNotEmpty();
     }
 
@@ -58,6 +68,7 @@ export default (hostComponent) => {
             ${commonTextAreaSection("Paste your content here...")}
         `;
 
+        reattachBackButtonEventListener();
         enableContinueIfNotEmpty();
     }
 
