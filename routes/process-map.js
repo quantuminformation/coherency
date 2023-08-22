@@ -1,31 +1,29 @@
-// Stored in /routes/process-map.js
-
 export default (hostComponent) => {
     hostComponent.innerHTML = ''; // Clear the hostComponent
 
-    const backButtonHTML = `<button id="goBack" class="back-button">🔙 Go Back</button>`;
+    const flexContainer = document.createElement('div');
+    flexContainer.className = 'flex flex-col gap-md items-center';
+    hostComponent.appendChild(flexContainer);
 
-    // Function to show initial choices
-    function showCoherencyChoice() {
-        hostComponent.innerHTML = `
-            <div class="coherency-choice">
-                <h2>Find COHERENCY in: (choose one)</h2>
-                <button id="chooseConversation">Conversation</button>
-                <button id="chooseContent">Content</button>
-            </div>
+    const backButton = document.createElement('button');
+    backButton.id = 'goBack';
+    backButton.className = 'back-button';
+    backButton.innerHTML = '🔙 Go Back';
+    backButton.addEventListener('click', showCoherencyChoice);
+
+    function commonTextAreaSection(placeholderText) {
+        return `
+            <textarea id="commonTextarea" rows="10" cols="30" placeholder="${placeholderText}"></textarea>
+            <button id="continueToSubject" disabled>Continue to SUBJECT</button>
         `;
-        attachInitialEventListeners();
     }
 
-    function attachInitialEventListeners() {
-        document.getElementById("chooseConversation").addEventListener("click", showConversation);
-        document.getElementById("chooseContent").addEventListener("click", showContent);
-    }
+    function enableContinueIfNotEmpty() {
+        const textAreaElement = document.getElementById("commonTextarea");
+        const continueButtonElement = document.getElementById("continueToSubject");
 
-    function enableContinueIfNotEmpty(textAreaElement, continueButtonElement) {
-        // Check the content of the textarea on any input change
         textAreaElement.addEventListener("input", () => {
-            if(textAreaElement.value.trim()) {
+            if (textAreaElement.value.trim()) {
                 continueButtonElement.removeAttribute('disabled');
             } else {
                 continueButtonElement.setAttribute('disabled', 'true');
@@ -33,46 +31,39 @@ export default (hostComponent) => {
         });
     }
 
-    function showConversation() {
-        hostComponent.innerHTML = `
-            <div class="flex flex-col gap-md">
-                ${backButtonHTML}
-                <h2>Begin Conversation</h2>
-                <textarea id="dictateToText" rows="10" cols="30" placeholder="Your dictated text will appear here..."></textarea>
-                <button id="continueToSubject" disabled>Continue to SUBJECT</button>
-            </div>
+    function showCoherencyChoice() {
+        flexContainer.innerHTML = `
+            <h2>Find COHERENCY in: (choose one)</h2>
+            <div class="flex gap-md"><button id="chooseConversation">Conversation</button>
+            <button id="chooseContent">Content</button></div>
         `;
 
-        // Listen for back button click
-        document.getElementById("goBack").addEventListener("click", showCoherencyChoice);
+        attachInitialEventListeners();
+    }
 
-        // Enable continue button if text area has content
-        enableContinueIfNotEmpty(document.getElementById("dictateToText"), document.getElementById("continueToSubject"));
+    function showConversation() {
+        flexContainer.innerHTML = `
+            ${backButton.outerHTML}
+            <button>🎤 Record conversation</button>
+            ${commonTextAreaSection("Your dictated text will appear here...")}
+        `;
 
-        document.getElementById("continueToSubject").addEventListener("click", function() {
-            // Code to transition to the SUBJECT component
-        });
+        enableContinueIfNotEmpty();
     }
 
     function showContent() {
-        hostComponent.innerHTML = `
-            <div class="flex flex-col gap-md">
-                ${backButtonHTML}
-                <h2>Copy and Paste</h2>
-                <textarea id="contentToPaste" rows="10" cols="30" placeholder="Paste your content here..."></textarea>
-                <button id="continueToSubject" disabled>Continue to SUBJECT</button>
-            </div>
+        flexContainer.innerHTML = `
+            ${backButton.outerHTML}
+            <h2>Copy and Paste</h2>
+            ${commonTextAreaSection("Paste your content here...")}
         `;
 
-        // Listen for back button click
-        document.getElementById("goBack").addEventListener("click", showCoherencyChoice);
+        enableContinueIfNotEmpty();
+    }
 
-        // Enable continue button if text area has content
-        enableContinueIfNotEmpty(document.getElementById("contentToPaste"), document.getElementById("continueToSubject"));
-
-        document.getElementById("continueToSubject").addEventListener("click", function() {
-            // Code to transition to the SUBJECT component
-        });
+    function attachInitialEventListeners() {
+        document.getElementById("chooseConversation").addEventListener("click", showConversation);
+        document.getElementById("chooseContent").addEventListener("click", showContent);
     }
 
     // Start with initial choices

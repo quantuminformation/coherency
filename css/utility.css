@@ -26,9 +26,10 @@ don't style specific components in here
 .justify-center {
   justify-content: center;
 }
-.align-center {
+.items-center {
   align-items: center;
 }
+
 
 .gap-md {
   gap: 1rem;
