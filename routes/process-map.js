@@ -3,46 +3,78 @@
 export default (hostComponent) => {
     hostComponent.innerHTML = ''; // Clear the hostComponent
 
-    // HTML for the initial options
-    const chooseCoherencyHTML = `
-        <div class="coherency-choice">
-            <h2>Find COHERENCY in: (choose one)</h2>
-            <button id="chooseConversation">Conversation</button>
-            <button id="chooseContent">Content</button>
-        </div>
-    `;
+    const backButtonHTML = `<button id="goBack" class="back-button">🔙 Go Back</button>`;
 
-    // Inject the initial HTML into the hostComponent
-    hostComponent.innerHTML = chooseCoherencyHTML;
-
-    // Event handlers for the buttons
-    document.getElementById("chooseConversation").addEventListener("click", function() {
+    // Function to show initial choices
+    function showCoherencyChoice() {
         hostComponent.innerHTML = `
-            <div>
-                <h2>Begin Conversation</h2>
-                <textarea id="dictateToText" rows="10" cols="30" placeholder="Your dictated text will appear here..."></textarea>
-                <button id="continueToSubject">Continue to SUBJECT</button>
+            <div class="coherency-choice">
+                <h2>Find COHERENCY in: (choose one)</h2>
+                <button id="chooseConversation">Conversation</button>
+                <button id="chooseContent">Content</button>
             </div>
         `;
+        attachInitialEventListeners();
+    }
 
-        // You can now integrate any "speech-to-text" library here to fill the textarea
+    function attachInitialEventListeners() {
+        document.getElementById("chooseConversation").addEventListener("click", showConversation);
+        document.getElementById("chooseContent").addEventListener("click", showContent);
+    }
 
-        document.getElementById("continueToSubject").addEventListener("click", function() {
-            // Code to transition to the SUBJECT component
+    function enableContinueIfNotEmpty(textAreaElement, continueButtonElement) {
+        // Check the content of the textarea on any input change
+        textAreaElement.addEventListener("input", () => {
+            if(textAreaElement.value.trim()) {
+                continueButtonElement.removeAttribute('disabled');
+            } else {
+                continueButtonElement.setAttribute('disabled', 'true');
+            }
         });
-    });
+    }
 
-    document.getElementById("chooseContent").addEventListener("click", function() {
+    function showConversation() {
         hostComponent.innerHTML = `
             <div class="flex flex-col gap-md">
-                <h2>Copy and Paste</h2>
-                <textarea id="contentToPaste" rows="10" cols="30" placeholder="Paste your content here..."></textarea>
-                <button id="continueToSubject">Continue to SUBJECT</button>
+                ${backButtonHTML}
+                <h2>Begin Conversation</h2>
+                <textarea id="dictateToText" rows="10" cols="30" placeholder="Your dictated text will appear here..."></textarea>
+                <button id="continueToSubject" disabled>Continue to SUBJECT</button>
             </div>
         `;
+
+        // Listen for back button click
+        document.getElementById("goBack").addEventListener("click", showCoherencyChoice);
+
+        // Enable continue button if text area has content
+        enableContinueIfNotEmpty(document.getElementById("dictateToText"), document.getElementById("continueToSubject"));
 
         document.getElementById("continueToSubject").addEventListener("click", function() {
             // Code to transition to the SUBJECT component
         });
-    });
+    }
+
+    function showContent() {
+        hostComponent.innerHTML = `
+            <div class="flex flex-col gap-md">
+                ${backButtonHTML}
+                <h2>Copy and Paste</h2>
+                <textarea id="contentToPaste" rows="10" cols="30" placeholder="Paste your content here..."></textarea>
+                <button id="continueToSubject" disabled>Continue to SUBJECT</button>
+            </div>
+        `;
+
+        // Listen for back button click
+        document.getElementById("goBack").addEventListener("click", showCoherencyChoice);
+
+        // Enable continue button if text area has content
+        enableContinueIfNotEmpty(document.getElementById("contentToPaste"), document.getElementById("continueToSubject"));
+
+        document.getElementById("continueToSubject").addEventListener("click", function() {
+            // Code to transition to the SUBJECT component
+        });
+    }
+
+    // Start with initial choices
+    showCoherencyChoice();
 };

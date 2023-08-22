@@ -1,4 +1,4 @@
-/* Stored in /css/button.css */
+/* Stored in /css/button-badge.css */
 
 button,
 .button {
@@ -14,6 +14,11 @@ button,
   }
   &:active {
     transform: scale(0.95);
+  }
+  &:disabled {
+    filter: grayscale(1) brightness(0.7);  /* Convert to grayscale and reduce brightness */
+    cursor: not-allowed;
+    pointer-events: none; /* Making sure the button doesn't trigger any event while disabled */
   }
 
   &.secondary {
@@ -55,3 +60,15 @@ button,
   color: var(--default-text);
   border: 1px solid var(--default-text);
 }
+
+/* todo
+button.secondary:disabled,
+.button.secondary:disabled {
+  filter: grayscale(1) brightness(0.85);  !* Convert to grayscale and slightly reduce brightness for secondary *!
+}
+
+button.outline:disabled,
+.button.outline:disabled {
+  filter: grayscale(1) brightness(0.9); !* Convert to grayscale and only slightly reduce brightness for outline *!
+}
+*/
