@@ -66,10 +66,9 @@ export default (hostComponent) => {
     async function showConversation() {
         flexContainer.innerHTML = `
             ${backButton.outerHTML}
-            
-            <div data-component="audio-recorder"></div>
-
             ${commonTextAreaSection("Your dictated text will appear here...")}
+                        <div data-component="audio-recorder" class="flex flex-col items-center gap-md"></div>
+
         `;
 
         reattachBackButtonEventListener();
