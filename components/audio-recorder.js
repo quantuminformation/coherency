@@ -1,6 +1,20 @@
+/**
+ * Sends audio chunks to dom event every 2 seconds
+ * Displays a spectrum analyzer and a record button
+ * stored in /components/audio-recorder.js
+ * @param hostComponent
+ */
+
 export default (hostComponent) => {
-    // Define the combined HTML structure
     const combinedComponentHTML = `
+        <style>
+            #analyzerCanvas {
+                width: 100%; 
+                                height: 3rem;
+                display: block; 
+                max-width: 800px;
+            }
+        </style>
         <button id="recordButton">Start Recording</button>
         <canvas id="analyzerCanvas" width="800" height="256"></canvas>
     `;
@@ -9,6 +23,7 @@ export default (hostComponent) => {
 
     // Spectrum Analyzer Initialization
     const canvas = document.getElementById('analyzerCanvas');
+    canvas.width = hostComponent.offsetWidth;  // Set canvas width based on parent
     const canvasContext = canvas.getContext('2d');
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioContext.createAnalyser();

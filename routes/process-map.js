@@ -20,7 +20,7 @@ export default (hostComponent) => {
 
     function commonTextAreaSection(placeholderText) {
         return `
-            <textarea id="commonTextarea" rows="10" cols="30" placeholder="${placeholderText}"></textarea>
+            <textarea id="commonTextarea" rows="30" style="width:100%;"  placeholder="${placeholderText}"></textarea>
             <button id="continueToSubject" disabled>Continue to SUBJECT</button>
         `;
     }
