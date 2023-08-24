@@ -5,6 +5,21 @@
  */
 import {loadAndRunComponents} from "../componentLoader.js";
 
+const worker = new Worker(new URL("../worker.js", import.meta.url));
+
+worker.addEventListener("message", (event) => {
+    const { status, task, data } = event.data;
+
+    if (status === "update" && task === "automatic-speech-recognition") {
+        const textAreaElement = document.getElementById("commonTextarea");
+        if (textAreaElement) {
+            textAreaElement.value += data.text;  // Append the transcribed text
+        }
+    } else if (status === "error") {
+        console.error("Transcription error:", data);
+    }
+});
+
 export default (hostComponent) => {
     hostComponent.innerHTML = '';
 
@@ -16,7 +31,6 @@ export default (hostComponent) => {
     backButton.id = 'goBack';
     backButton.className = 'back-button';
     backButton.innerHTML = '🔙 Go Back';
-    // Notice we aren't attaching the event here, we'll do it post-render.
 
     function commonTextAreaSection(placeholderText) {
         return `
@@ -30,19 +44,15 @@ export default (hostComponent) => {
         const continueButtonElement = document.getElementById("continueToSubject");
 
         textAreaElement.addEventListener("input", () => {
-            debugger
-
             if (textAreaElement.value.trim()) {
                 continueButtonElement.removeAttribute('disabled');
-
-                // Call sentiment analysis upon input
+                // Call sentiment analysis upon input (assuming this function exists elsewhere in your code)
                 analyzeSentiment(textAreaElement.value);
             } else {
                 continueButtonElement.setAttribute('disabled', 'true');
             }
         });
     }
-
 
     function reattachBackButtonEventListener() {
         const backButtonElement = document.getElementById("goBack");
@@ -67,14 +77,12 @@ export default (hostComponent) => {
         flexContainer.innerHTML = `
             ${backButton.outerHTML}
             ${commonTextAreaSection("Your dictated text will appear here...")}
-                        <div data-component="audio-recorder" class="flex flex-col items-center gap-md"></div>
-
+            <div data-component="audio-recorder" class="flex flex-col items-center gap-md"></div>
         `;
 
         reattachBackButtonEventListener();
         enableContinueIfNotEmpty();
         await  loadAndRunComponents(flexContainer);
-
     }
 
     function showContent() {
@@ -95,9 +103,12 @@ export default (hostComponent) => {
 
     // Start with initial choices
     showCoherencyChoice();
-    document.body.addEventListener('audio-chunk', event => {
 
+    document.body.addEventListener('audio-chunk', event => {
         const audioChunk = event.detail;
-        // Send the audioChunk for transcription
+        worker.postMessage({
+            audio: audioChunk,
+            // Include any other parameters required for the worker here
+        });
     });
 };
