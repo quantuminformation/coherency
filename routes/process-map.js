@@ -1,3 +1,10 @@
+/**
+ * This is the process map for the Coherency feature.
+ * Stored in /routes/process-map.js
+ * @param hostComponent
+ */
+import {loadAndRunComponents} from "../componentLoader.js";
+
 export default (hostComponent) => {
     hostComponent.innerHTML = '';
 
@@ -23,13 +30,19 @@ export default (hostComponent) => {
         const continueButtonElement = document.getElementById("continueToSubject");
 
         textAreaElement.addEventListener("input", () => {
+            debugger
+
             if (textAreaElement.value.trim()) {
                 continueButtonElement.removeAttribute('disabled');
+
+                // Call sentiment analysis upon input
+                analyzeSentiment(textAreaElement.value);
             } else {
                 continueButtonElement.setAttribute('disabled', 'true');
             }
         });
     }
+
 
     function reattachBackButtonEventListener() {
         const backButtonElement = document.getElementById("goBack");
@@ -50,15 +63,19 @@ export default (hostComponent) => {
         attachInitialEventListeners();
     }
 
-    function showConversation() {
+    async function showConversation() {
         flexContainer.innerHTML = `
             ${backButton.outerHTML}
-            <button>🎤 Record conversation</button>
+            
+            <div data-component="audio-recorder"></div>
+
             ${commonTextAreaSection("Your dictated text will appear here...")}
         `;
 
         reattachBackButtonEventListener();
         enableContinueIfNotEmpty();
+        await  loadAndRunComponents(flexContainer);
+
     }
 
     function showContent() {

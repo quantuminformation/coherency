@@ -49,6 +49,17 @@ export const runComponents = (components) => {
   });
 };
 
+/**
+ * Load and run components within a parent element, use for components that are added after default route loads or when the app is initialized
+ * @param parentElement
+ * @returns {Promise<void>}
+ */
+export const loadAndRunComponents = async (parentElement) => {
+  const components = parentElement.querySelectorAll('[data-component]');
+  await importComponents(components);
+  runComponents(components);
+};
+
 const getAllComponents = () => {
   const components = document.querySelectorAll('[data-component]');
   return Array.from(components);
