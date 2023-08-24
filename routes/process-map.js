@@ -96,4 +96,9 @@ export default (hostComponent) => {
 
     // Start with initial choices
     showCoherencyChoice();
+    document.body.addEventListener('audio-chunk', event => {
+
+        const audioChunk = event.detail;
+        // Send the audioChunk for transcription
+    });
 };
