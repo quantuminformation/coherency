@@ -5,21 +5,29 @@
  */
 import {loadAndRunComponents} from "../componentLoader.js";
 
-const worker = new Worker(new URL("../worker.js", import.meta.url));
+//const worker = new Worker(new URL("../worker.js", import.meta.url));
+
+//const worker = new Worker("../worker.js", { type: "module" })
+
+const worker = new Worker(new URL("../worker.js", import.meta.url), {
+    type: "module",
+});
+
 
 worker.addEventListener("message", (event) => {
-    const { status, task, data } = event.data;
+    const { status, task, data, file, progress } = event.data;
 
     if (status === "update" && task === "automatic-speech-recognition") {
         const textAreaElement = document.getElementById("commonTextarea");
         if (textAreaElement) {
             textAreaElement.value += data.text;  // Append the transcribed text
         }
+    } else if (status === "progress") {
+        console.log(`Model: ${file}, Progress: ${progress}%`); // Log the model download progress
     } else if (status === "error") {
         console.error("Transcription error:", data);
     }
 });
-
 export default (hostComponent) => {
     hostComponent.innerHTML = '';
 
