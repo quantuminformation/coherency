@@ -4,10 +4,8 @@
  * @param hostComponent
  */
 import {loadAndRunComponents} from "../componentLoader.js";
+import {AUDIO_CHUNK_RECORDED} from "../components/audio-recorder.js";
 
-//const worker = new Worker(new URL("../worker.js", import.meta.url));
-
-//const worker = new Worker("../worker.js", { type: "module" })
 
 const worker = new Worker(new URL("../worker.js", import.meta.url), {
     type: "module",
@@ -112,7 +110,7 @@ export default (hostComponent) => {
     // Start with initial choices
     showCoherencyChoice();
 
-    document.body.addEventListener('audio-chunk', event => {
+    document.body.addEventListener(AUDIO_CHUNK_RECORDED, event => {
         const audioChunk = event.detail;
         worker.postMessage({
             audio: audioChunk,

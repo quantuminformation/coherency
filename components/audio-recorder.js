@@ -4,7 +4,7 @@
  * stored in /components/audio-recorder.js
  * @param hostComponent
  */
-
+export const AUDIO_CHUNK_RECORDED ='AUDIO_CHUNK_RECORDED'
 export default (hostComponent) => {
     const combinedComponentHTML = `
         <style>
@@ -46,7 +46,7 @@ export default (hostComponent) => {
 
                 // Dispatch audio chunk every 2 seconds
                 const audioBlob = new Blob([event.data], { type: 'audio/wav' });
-                document.body.dispatchEvent(new CustomEvent('audio-chunk-recorded', { detail: audioBlob }));
+                document.body.dispatchEvent(new CustomEvent(AUDIO_CHUNK_RECORDED, { detail: audioBlob }));
             };
 
             draw(); // Begin the spectrum analyzer visualization
