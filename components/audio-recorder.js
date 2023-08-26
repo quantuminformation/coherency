@@ -58,7 +58,7 @@ export default (hostComponent) => {
     document.getElementById('recordButton').addEventListener('click', () => {
         if (mediaRecorder.state === 'inactive') {
             audioChunks = [];
-            mediaRecorder.start(2000); // Start recording and emit data every 2 seconds
+            mediaRecorder.start(5000); // Start recording and emit data every 2 seconds
             document.getElementById('recordButton').textContent = "Stop Recording";
         } else {
             mediaRecorder.stop();
