@@ -47,6 +47,7 @@ export default (hostComponent) => {
 
         // Dispatch audio chunk every 2 seconds
         const audioBlob = new Blob([event.data], { type: 'audio/wav' });
+        mediaRecorder.stop();
         document.body.dispatchEvent(new CustomEvent(AUDIO_CHUNK_RECORDED, { detail: audioBlob }));
       };
 
@@ -59,7 +60,7 @@ export default (hostComponent) => {
   document.getElementById('recordButton').addEventListener('click', () => {
     if (mediaRecorder.state === 'inactive') {
       audioChunks = [];
-      mediaRecorder.start(2000); // Start recording and emit data every 2 seconds
+      mediaRecorder.start(4000); // Start recording and emit data every 2 seconds
       document.getElementById('recordButton').textContent = 'Stop Recording';
     } else {
       mediaRecorder.stop();
