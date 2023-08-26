@@ -10,6 +10,7 @@ import {
   DEFAULT_MODEL,
   DEFAULT_MULTILINGUAL,
   DEFAULT_QUANTIZED,
+  DEFAULT_SAMPLING_RATE,
   DEFAULT_SUBTASK,
 } from '../constants.js';
 
@@ -115,10 +116,12 @@ export default (hostComponent) => {
   // Start with initial choices
   showCoherencyChoice();
 
-  document.body.addEventListener(AUDIO_CHUNK_RECORDED, (event) => {
+  document.body.addEventListener(AUDIO_CHUNK_RECORDED, async (event) => {
     const audioChunk = event.detail;
+    const data = await getAudioFromRecording(audioChunk);
+
     worker.postMessage({
-      audio: audioChunk,
+      audio: data.buffer.getChannelData(0),
       model: DEFAULT_MODEL,
       multilingual: DEFAULT_MULTILINGUAL,
       quantized: DEFAULT_QUANTIZED,
@@ -127,5 +130,40 @@ export default (hostComponent) => {
 
       // Include any other parameters required for the worker here
     });
+  });
+};
+
+const getAudioFromRecording = async (data) => {
+  return new Promise((resolve, reject) => {
+    const blobUrl = URL.createObjectURL(data);
+    const fileReader = new FileReader();
+
+    fileReader.onprogress = (event) => {
+      console.log(event.loaded / event.total || 0);
+    };
+
+    fileReader.onerror = (error) => {
+      reject(error);
+    };
+
+    fileReader.onloadend = async () => {
+      try {
+        const audioCTX = new AudioContext({
+          sampleRate: DEFAULT_SAMPLING_RATE,
+        });
+        const arrayBuffer = fileReader.result;
+        const decoded = await audioCTX.decodeAudioData(arrayBuffer);
+
+        resolve({
+          buffer: decoded,
+          url: blobUrl,
+          mimeType: data.type,
+        });
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    fileReader.readAsArrayBuffer(data);
   });
 };

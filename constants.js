@@ -28,3 +28,4 @@ export const DEFAULT_SUBTASK = 'transcribe';
 export const DEFAULT_LANGUAGE = 'english';
 export const DEFAULT_QUANTIZED = isMobileOrTablet;
 export const DEFAULT_MULTILINGUAL = false;
+export const DEFAULT_SAMPLING_RATE = 16000;
