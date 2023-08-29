@@ -4,7 +4,7 @@
  * @param hostComponent
  */
 import { loadAndRunComponents } from '../componentLoader.js';
-import { AUDIO_CHUNK_RECORDED } from '../components/audio-recorder.js';
+import { AUDIO_ARRAY32_RECORDED } from '../components/audio-recorder.js';
 import {
   DEFAULT_LANGUAGE,
   DEFAULT_MODEL,
@@ -116,20 +116,9 @@ export default (hostComponent) => {
   // Start with initial choices
   showCoherencyChoice();
 
-  document.body.addEventListener(AUDIO_CHUNK_RECORDED, async (event) => {
+  document.body.addEventListener(AUDIO_ARRAY32_RECORDED, async (event) => {
     const audioChunk = event.detail;
     const data = await getAudioFromRecording(audioChunk);
-
-    worker.postMessage({
-      audio: data.buffer.getChannelData(0),
-      model: DEFAULT_MODEL,
-      multilingual: DEFAULT_MULTILINGUAL,
-      quantized: DEFAULT_QUANTIZED,
-      subtask: DEFAULT_SUBTASK,
-      language: DEFAULT_LANGUAGE,
-
-      // Include any other parameters required for the worker here
-    });
   });
 };
 
