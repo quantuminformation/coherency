@@ -3,6 +3,7 @@ import {
   DEFAULT_MODEL,
   DEFAULT_MULTILINGUAL,
   DEFAULT_QUANTIZED,
+  DEFAULT_SAMPLING_RATE,
   DEFAULT_SUBTASK,
 } from '../constants.js';
 
@@ -17,7 +18,10 @@ const worker = new Worker(new URL('../worker.js', import.meta.url), {
  */
 export const AUDIO_ARRAY32_RECORDED = 'AUDIO_ARRAY32_RECORDED';
 let storedAudio32Array = [];
-const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+const audioContext = new AudioContext({
+  sampleRate: DEFAULT_SAMPLING_RATE,
+});
 
 export default (hostComponent) => {
   const combinedComponentHTML = `
