@@ -18,12 +18,11 @@ const worker = new Worker(new URL('../worker.js', import.meta.url), {
  */
 export const AUDIO_ARRAY32_RECORDED = 'AUDIO_ARRAY32_RECORDED';
 let storedAudio32Array = [];
-
 const audioContext = new AudioContext({
   sampleRate: DEFAULT_SAMPLING_RATE,
 });
 
-export default (hostComponent) => {
+export default async (hostComponent) => {
   const combinedComponentHTML = `
         <style>
             #analyzerCanvas {
@@ -39,15 +38,14 @@ export default (hostComponent) => {
     `;
   hostComponent.innerHTML = combinedComponentHTML;
 
-  // MimeType Support Function
   function getMimeType() {
     const types = ['audio/webm', 'audio/mp4', 'audio/ogg', 'audio/wav', 'audio/aac'];
-    for (let i = 0; i < types.length; i++) {
-      if (MediaRecorder.isTypeSupported(types[i])) {
-        return types[i];
+    for (let type of types) {
+      if (MediaRecorder.isTypeSupported(type)) {
+        return type;
       }
     }
-    return 'audio/wav'; // Default to wav if none supported
+    return 'audio/wav';
   }
 
   let startTime;
@@ -71,64 +69,38 @@ export default (hostComponent) => {
   analyser.fftSize = 256;
   const bufferLength = analyser.frequencyBinCount;
   const dataArray = new Uint8Array(bufferLength);
-
   let mediaRecorder;
   let audioChunks = [];
 
-  navigator.mediaDevices
-    .getUserMedia({ audio: true })
-    .then((stream) => {
-      const source = audioContext.createMediaStreamSource(stream);
-      source.connect(analyser);
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const source = audioContext.createMediaStreamSource(stream);
+    source.connect(analyser);
+    const mimeType = getMimeType();
+    mediaRecorder = new MediaRecorder(stream, { mimeType });
+    mediaRecorder.ondataavailable = async (event) => {
+      if (event.data.size > 0) audioChunks.push(event.data);
+      if (mediaRecorder.state === 'inactive') {
+        const blob = new Blob(audioChunks, { type: mimeType });
+        audioChunks = [];
 
-      const mimeType = getMimeType();
-      mediaRecorder = new MediaRecorder(stream, { mimeType });
-      mediaRecorder.ondataavailable = async (event) => {
-        if (event.data.size > 0) {
-          audioChunks.push(event.data);
-        }
-        if (mediaRecorder.state === 'inactive') {
-          const recordingDuration = Date.now() - startTime;
-          let blobType = getMimeType();
-          let blob = new Blob(audioChunks, { type: blobType });
+        const float32Data = await blobToFloat32Array(blob);
+        playFloat32Audio(float32Data);
 
-          //todo
-          /*   if (blobType === 'audio/webm') {
-            // Assuming webmFixDuration function is available and imported
-            blob = await webmFixDuration(blob, recordingDuration, blob.type);
-          }*/
-
-          // document.body.dispatchEvent(new CustomEvent(AUDIO_ARRAY32_RECORDED, { detail: blob }));
-          audioChunks = [];
-
-          try {
-            const float32Data = await blobToFloat32Array(blob);
-            playFloat32Audio(float32Data);
-
-            worker.postMessage({
-              audio: float32Data,
-              model: DEFAULT_MODEL,
-              multilingual: DEFAULT_MULTILINGUAL,
-              quantized: DEFAULT_QUANTIZED,
-              subtask: DEFAULT_SUBTASK,
-              language: DEFAULT_LANGUAGE,
-
-              // Include any other parameters required for the worker here
-            });
-          } catch (error) {
-            console.error('Error converting blob to Float32Array:', error);
-          }
-
-          // stop till we get this working
-          mediaRecorder.stop();
-        }
-      };
-
-      draw();
-    })
-    .catch((error) => {
-      console.error('Error accessing the microphone:', error);
-    });
+        worker.postMessage({
+          audio: float32Data,
+          model: DEFAULT_MODEL,
+          multilingual: DEFAULT_MULTILINGUAL,
+          quantized: DEFAULT_QUANTIZED,
+          subtask: DEFAULT_SUBTASK,
+          language: DEFAULT_LANGUAGE,
+        });
+      }
+    };
+    draw();
+  } catch (error) {
+    console.error('Error accessing the microphone:', error);
+  }
 
   document.getElementById('recordButton').addEventListener('click', () => {
     if (mediaRecorder.state === 'inactive') {
@@ -150,14 +122,12 @@ export default (hostComponent) => {
     const barWidth = (canvas.width / bufferLength) * 2.5;
     let barHeight;
     let x = 0;
-
     for (let i = 0; i < bufferLength; i++) {
       barHeight = dataArray[i];
       canvasContext.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
       canvasContext.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
       x += barWidth + 1;
     }
-
     requestAnimationFrame(draw);
   }
 };
@@ -172,26 +142,19 @@ function playFloat32Audio(float32Array) {
 }
 
 async function blobToFloat32Array(blob) {
-  return new Promise((resolve, reject) => {
-    const fileReader = new FileReader();
+  const fileReader = new FileReader();
 
-    fileReader.onload = async function (event) {
+  return new Promise((resolve, reject) => {
+    fileReader.onload = async (event) => {
       try {
         const audioBuffer = await audioContext.decodeAudioData(event.target.result);
-        const float32Array = audioBuffer.getChannelData(0); // Assuming mono audio. Use 1 for stereo channel 2.
+        const float32Array = audioBuffer.getChannelData(0);
         resolve(float32Array);
       } catch (error) {
         reject(error);
       }
     };
-
-    fileReader.onerror = (error) => {
-      reject(new Error('File Reading Error: ' + error));
-    };
-
+    fileReader.onerror = (error) => reject(new Error('File Reading Error: ' + error));
     fileReader.readAsArrayBuffer(blob);
   });
 }
-
-// Example usage:
-//blobToFloat32Array(audioBlob, playFloat32Audio);
