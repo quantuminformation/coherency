@@ -2,7 +2,7 @@
 Stored in worker.js
  */
 
-import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.5.3';
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.5.4';
 
 // Disable local models
 env.allowLocalModels = false;

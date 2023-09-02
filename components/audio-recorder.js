@@ -6,6 +6,7 @@ import {
   DEFAULT_SAMPLING_RATE,
   DEFAULT_SUBTASK,
 } from '../constants.js';
+import { webmFixDuration } from '../lib/BlobFix.js';
 
 const worker = new Worker(new URL('../worker.js', import.meta.url), {
   type: 'module',
@@ -18,9 +19,18 @@ const worker = new Worker(new URL('../worker.js', import.meta.url), {
  */
 export const AUDIO_ARRAY32_RECORDED = 'AUDIO_ARRAY32_RECORDED';
 let storedAudio32Array = [];
-const audioContext = new AudioContext({
-  sampleRate: DEFAULT_SAMPLING_RATE,
-});
+let audioContext;
+let analyser;
+
+const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+const audioSettings = stream.getAudioTracks()[0].getSettings();
+const actualSampleRate = audioSettings.sampleRate;
+audioContext = new AudioContext({ sampleRate: actualSampleRate });
+
+analyser = audioContext.createAnalyser();
+analyser.fftSize = 256;
+const bufferLength = analyser.frequencyBinCount;
+const dataArray = new Uint8Array(bufferLength);
 
 export default async (hostComponent) => {
   const combinedComponentHTML = `
@@ -65,23 +75,28 @@ export default async (hostComponent) => {
   const canvas = document.getElementById('analyzerCanvas');
   canvas.width = hostComponent.offsetWidth;
   const canvasContext = canvas.getContext('2d');
-  const analyser = audioContext.createAnalyser();
-  analyser.fftSize = 256;
-  const bufferLength = analyser.frequencyBinCount;
-  const dataArray = new Uint8Array(bufferLength);
+
   let mediaRecorder;
   let audioChunks = [];
 
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const source = audioContext.createMediaStreamSource(stream);
     source.connect(analyser);
     const mimeType = getMimeType();
     mediaRecorder = new MediaRecorder(stream, { mimeType });
+    let startTime = Date.now();
+
     mediaRecorder.ondataavailable = async (event) => {
       if (event.data.size > 0) audioChunks.push(event.data);
       if (mediaRecorder.state === 'inactive') {
-        const blob = new Blob(audioChunks, { type: mimeType });
+        const duration = Date.now() - startTime;
+
+        let blob = new Blob(audioChunks, { type: mimeType });
+
+        if (mimeType === 'audio/webm') {
+          blob = await webmFixDuration(blob, duration, blob.type);
+        }
+
         audioChunks = [];
 
         const float32Data = await blobToFloat32Array(blob);
